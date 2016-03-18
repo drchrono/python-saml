@@ -193,26 +193,26 @@ class OneLogin_Saml2_Response(object):
                 if security.get('wantMessagesSigned', False) and ('{%s}Response' % OneLogin_Saml2_Constants.NS_SAMLP) not in signed_elements:
                     raise Exception('The Message of the Response is not signed and the SP require it')
 
-            if len(signed_elements) > 0:
-                if len(signed_elements) > 2:
-                    raise Exception('Too many Signatures found. SAML Response rejected')
-                cert = idp_data.get('x509cert', None)
-                fingerprint = idp_data.get('certFingerprint', None)
-                fingerprintalg = idp_data.get('certFingerprintAlgorithm', None)
+                if len(signed_elements) > 0:
+                    if len(signed_elements) > 2:
+                        raise Exception('Too many Signatures found. SAML Response rejected')
+                    cert = idp_data.get('x509cert', None)
+                    fingerprint = idp_data.get('certFingerprint', None)
+                    fingerprintalg = idp_data.get('certFingerprintAlgorithm', None)
 
-                # If find a Signature on the Response, validates it checking the original response
-                if '{%s}Response' % OneLogin_Saml2_Constants.NS_SAMLP in signed_elements:
-                    document_to_validate = self.document
-                # Otherwise validates the assertion (decrypted assertion if was encrypted)
-                else:
-                    if self.encrypted:
-                        document_to_validate = self.decrypted_document
-                    else:
+                    # If find a Signature on the Response, validates it checking the original response
+                    if '{%s}Response' % OneLogin_Saml2_Constants.NS_SAMLP in signed_elements:
                         document_to_validate = self.document
-                if not OneLogin_Saml2_Utils.validate_sign(document_to_validate, cert, fingerprint, fingerprintalg):
-                    raise Exception('Signature validation failed. SAML Response rejected')
-            else:
-                raise Exception('No Signature found. SAML Response rejected')
+                    # Otherwise validates the assertion (decrypted assertion if was encrypted)
+                    else:
+                        if self.encrypted:
+                            document_to_validate = self.decrypted_document
+                        else:
+                            document_to_validate = self.document
+                    if not OneLogin_Saml2_Utils.validate_sign(document_to_validate, cert, fingerprint, fingerprintalg):
+                        raise Exception('Signature validation failed. SAML Response rejected')
+                else:
+                    raise Exception('No Signature found. SAML Response rejected')
 
             return True
         except Exception as err:
